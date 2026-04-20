@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Health Assistant | BMI, BMR & Ideal Weight</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; text-align: center; }
+        .card { background: white; max-width: 600px; margin: auto; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 8px solid #27ae60; }
+        h2 { color: #27ae60; margin-bottom: 5px; }
+        input, select, button { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        button { background: #27ae60; color: white; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        button:hover { background: #219150; }
+        #report { margin-top: 25px; padding: 25px; border-radius: 12px; text-align: left; display: none; line-height: 1.6; }
+        .goal-box { background: #e3f2fd; border-left: 5px solid #2196f3; padding: 15px; margin-top: 15px; font-weight: bold; color: #1565c0; border-radius: 5px; }
+        .tips-box { background: #fff9e6; border-left: 5px solid #f1c40f; padding: 15px; margin-top: 15px; font-size: 14.5px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Smart Health Assistant</h2>
+    <p style="color: #666;">Get Your BMI, BMR & Ideal Weight Roadmap</p>
+    
+    <input type="text" id="name" placeholder="Enter Full Name">
+    <input type="number" id="age" placeholder="Age (Years)">
+    <select id="gender">
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+    </select>
+    <input type="number" id="weight" placeholder="Current Weight (kg)">
+    <input type="number" id="height" placeholder="Height (cm)">
+    
+    <button onclick="generateHealthReport()">Calculate Health Goals</button>
+
+    <div id="report">
+        <h3 id="resultTitle" style="color: #2c3e50; border-bottom: 2px solid #eee; padding-bottom: 5px;"></h3>
+        <p id="stats"></p>
+        <div id="goalArea" class="goal-box"></div>
+        <div id="advice" class="tips-box"></div>
+    </div>
+</div>
+
+<script>
+    function generateHealthReport() {
+        let name = document.getElementById('name').value;
+        let age = parseInt(document.getElementById('age').value);
+        let gender = document.getElementById('gender').value;
+        let weight = parseFloat(document.getElementById('weight').value);
+        let heightCm = parseFloat(document.getElementById('height').value);
+        
+        if (!name || !age || !weight || !heightCm) {
+            alert("Please provide all the information correctly!");
+            return;
+        }
+
+        // BMI Calculation
+        let heightM = heightCm / 100;
+        let bmi = (weight / (heightM * heightM)).toFixed(1);
+        
+        // BMR Calculation (Mifflin-St Jeor)
+        let bmr = (10 * weight) + (6.25 * heightCm) - (5 * age);
+        bmr = (gender === "male") ? bmr + 5 : bmr - 161;
+
+        // Ideal Weight Calculation (Reference BMI: 21.7 for healthy average)
+        let minIdeal = (18.5 * heightM * heightM).toFixed(1);
+        let maxIdeal = (24.9 * heightM * heightM).toFixed(1);
+        let perfectWeight = (21.7 * heightM * heightM).toFixed(1);
+
+        let reportDiv = document.getElementById('report');
+        let goalDiv = document.getElementById('goalArea');
+        let adviceDiv = document.getElementById('advice');
+        
+        reportDiv.style.display = "block";
+        document.getElementById('resultTitle').innerText = "Report for " + name;
+
+        let status = "";
+        let goalMsg = "";
+        let food = "";
+        let activity = "";
+
+        if (bmi < 18.5) {
+            status = "Underweight";
+            reportDiv.style.backgroundColor = "#fff9db";
+            let gain = (minIdeal - weight).toFixed(1);
+            goalMsg = `আপনার উচ্চতা অনুযায়ী আদর্শ ওজন হওয়া উচিত অন্তত ${minIdeal} কেজি। আপনাকে নূন্যতম ${gain} কেজি ওজন বাড়াতে হবে।`;
+            food = "খাদ্যতালিকায় ক্যালরি ও প্রোটিন বাড়ান। বাদাম, ঘি, ডিম এবং চর্বিহীন মাংস বেশি করে খান।";
+            activity = "পেশি বাড়াতে হালকা ফ্রি-হ্যান্ড ব্যায়াম করুন। দিনে অন্তত ৮ ঘণ্টা ঘুম নিশ্চিত করুন।";
+        } else if (bmi < 24.9) {
+            status = "Normal (Healthy)";
+            reportDiv.style.backgroundColor = "#e6fffa";
+            goalMsg = `অভিনন্দন! আপনি একদম সঠিক ওজনে আছেন। আপনার জন্য সবচেয়ে পারফেক্ট ওজন হলো ${perfectWeight} কেজি।`;
+            food = "সুষম খাবার বজায় রাখুন। প্রচুর পানি, ফলমূল এবং সবুজ শাকসবজি নিয়মিত খান।";
+            activity = "ফিটনেস বজায় রাখতে প্রতিদিন ৩০ মিনিট দ্রুত হাঁটা বা জগিং অব্যাহত রাখুন।";
+        } else {
+            status = "Overweight";
+            reportDiv.style.backgroundColor = "#fff5f5";
+            let loss = (weight - maxIdeal).toFixed(1);
+            goalMsg = `আপনার উচ্চতা অনুযায়ী আদর্শ ওজন হওয়া উচিত সর্বোচ্চ ${maxIdeal} কেজি। আপনাকে অন্তত ${loss} কেজি ওজন কমাতে হবে।`;
+            food = "চিনি, মিষ্টি এবং ভাজাপোড়া পুরোপুরি বন্ধ করুন। ভাতের পরিমাণ কমিয়ে শাকসবজি ও সালাদ বাড়ান।";
+            activity = "প্রতিদিন অন্তত ৪৫ মিনিট জগিং, সাঁতার বা সাইক্লিং করুন। আপনার ওজন দ্রুত কমানো প্রয়োজন।";
+        }
+
+        document.getElementById('stats').innerHTML = `
+            <b>BMI:</b> ${bmi} (${status}) <br>
+            <b>BMR:</b> ${bmr.toFixed(0)} Calories/day (আপনার বেঁচে থাকার জন্য নূন্যতম শক্তি প্রয়োজন)
+        `;
+
+        goalDiv.innerHTML = `🎯 <strong>আপনার লক্ষ্য:</strong> ${goalMsg}`;
+
+        adviceDiv.innerHTML = `
+            <strong>🍎 পুষ্টির পরামর্শ:</strong> ${food} <br><br>
+            <strong>🏃 ব্যায়াম ও লাইফস্টাইল:</strong> ${activity}
+        `;
+    }
+</script>
+
+<div style="margin-top: 20px; font-size: 13px; color: #888;">
+    Created by:  SUSMITA  DAS KRISHNA | © 2024  | Health Technology 
+</div>
+
+</body>
+</html>
